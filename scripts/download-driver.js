@@ -6,34 +6,63 @@ const path = require('path');
   const context = await browser.newContext({ acceptDownloads: true });
   const page = await context.newPage();
 
-  await page.goto('https://dl.konicaminolta.eu/en/?productName=bizhub+C220', {
-    waitUntil: 'networkidle',
-  });
+  try {
+    await page.goto('https://dl.konicaminolta.eu/en/?productName=bizhub+C220', {
+      waitUntil: 'networkidle',
+    });
 
-  await page.getByRole('button', { name: 'Go' }).click();
-  await page.getByRole('button', { name: 'Go' }).click();
-  await page.getByRole('heading', { name: 'Drivers' }).click();
+    // Cookie/consent banner - lokálně bývá už odklikaný z dřívějška,
+    // v čistém CI browseru se objeví znovu a může blokovat kliky pod sebou.
+    const cookieButtons = [
+      page.getByRole('button', { name: /accept/i }),
+      page.getByRole('button', { name: /agree/i }),
+      page.getByRole('button', { name: /souhlas/i }),
+    ];
+    for (const btn of cookieButtons) {
+      if (await btn.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        await btn.first().click();
+        break;
+      }
+    }
 
-  // POZOR: .nth(1) je pozičně založený selektor (vybírá např. ikonu OS).
-  // Pokud KM změní pořadí ikon na stránce, tohle je první místo, kde to praskne.
-  await page.getByRole('img').nth(1).click();
+    await page.getByRole('button', { name: 'Go' }).click();
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: 'Go' }).click();
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('heading', { name: 'Drivers' }).click();
+    await page.waitForLoadState('networkidle');
 
-  await page.getByRole('checkbox', { name: 'Accept License agreement' }).check();
+    // POZOR: .nth(1) je pozičně založený selektor (vybírá např. ikonu OS).
+    // Pokud KM změní pořadí ikon na stránce, tohle je první místo, kde to praskne.
+    await page.getByRole('img').nth(1).click();
+    await page.waitForLoadState('networkidle');
 
-  const downloadPromise = page.waitForEvent('download');
-  // Název souboru obsahuje verzi (např. UPDPCL6Win_3913100MU.zip), proto
-  // matchujeme jen stabilní prefix, ne celý název - ten se s update mění.
-  await page.getByRole('link', { name: /^UPDPCL6Win.*\.zip/ }).click();
-  const download = await downloadPromise;
+    await page.getByRole('checkbox', { name: 'Accept License agreement' }).check();
 
-  const outPath = path.join(process.cwd(), 'driver_package.zip');
-  await download.saveAs(outPath);
+    // Odkaz může otevřít download buď na stejné stránce, nebo v nové záložce -
+    // posloucháme oba případy najednou.
+    const linkLocator = page.getByRole('link', { name: /^UPDPCL6Win.*\.zip/ });
+    const [download] = await Promise.all([
+      Promise.race([
+        page.waitForEvent('download', { timeout: 30000 }),
+        context.waitForEvent('page', { timeout: 30000 }).then((p) => p.waitForEvent('download')),
+      ]),
+      linkLocator.click(),
+    ]);
 
-  console.log('DOWNLOADED_FILE=' + outPath);
-  console.log('SUGGESTED_NAME=' + download.suggestedFilename());
+    const outPath = path.join(process.cwd(), 'driver_package.zip');
+    await download.saveAs(outPath);
 
-  await browser.close();
-})().catch((err) => {
-  console.error('Chyba při stahování ovladače:', err);
-  process.exit(1);
-});
+    console.log('DOWNLOADED_FILE=' + outPath);
+    console.log('SUGGESTED_NAME=' + download.suggestedFilename());
+  } catch (err) {
+    console.error('Chyba při stahování ovladače:', err);
+    // Debug artefakty - screenshot a HTML aktuálního stavu stránky
+    await page.screenshot({ path: 'debug-screenshot.png', fullPage: true }).catch(() => {});
+    const html = await page.content().catch(() => '');
+    require('fs').writeFileSync('debug-page.html', html);
+    process.exitCode = 1;
+  } finally {
+    await browser.close();
+  }
+})();
