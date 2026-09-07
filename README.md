@@ -14,7 +14,7 @@ Návod pro připojení síťové tiskárny **Konica Minolta bizhub C220** přes 
 Naklonuj toto repo pomocí `git clone https://github.com/Jakush/konica-minolta-kyberna.git`.
 
 ### b) Manual installation
-Stáhni ovladače ze stránky https://aka.jakush.space/konica-minolta-drivers (soubor `.inf`).
+Stáhni ovladače ze stránky https://aka.jakush.space/konica-minolta-drivers pak extrahuj.
 
 &nbsp;
 
