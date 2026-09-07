@@ -27,13 +27,17 @@ const path = require('path');
 
     await page.getByRole('button', { name: 'Go' }).click();
     await page.waitForLoadState('networkidle');
-    await page.getByRole('button', { name: 'Go' }).click();
-    await page.waitForLoadState('networkidle');
     await page.getByRole('heading', { name: 'Drivers' }).click();
     await page.waitForLoadState('networkidle');
 
-    // POZOR: .nth(1) je pozičně založený selektor (vybírá např. ikonu OS).
-    // Pokud KM změní pořadí ikon na stránce, tohle je první místo, kde to praskne.
+    // Explicitně nastavíme OS na Windows 11 - spolehlivější než klikání na
+    // ikonu podle pozice, protože nezávisí na výchozím stavu stránky.
+    await page.getByRole('combobox').nth(3).selectOption('string:Windows 11');
+    await page.waitForLoadState('networkidle');
+
+    // POZOR: .nth(1) je pozičně založený selektor (vybírá řádek/ikonu
+    // konkrétního driveru v tabulce). Pokud KM přidá/ubere řádek nad ním,
+    // tohle je další místo, kde to může sklouznout na jiný soubor.
     await page.getByRole('img').nth(1).click();
     await page.waitForLoadState('networkidle');
 
