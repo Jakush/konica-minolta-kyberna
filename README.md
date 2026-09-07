@@ -7,10 +7,17 @@ Návod pro připojení síťové tiskárny **Konica Minolta bizhub C220** přes 
 | Model | Konica Minolta bizhub C220 |
 | IP adresa | `10.1.5.70` |
 | Ovladač | stáhnout ze stránek [Konica Minolta](https://aka.jakush.space/konica-minolta-drivers) (soubor `.inf`) |
- 
+
 ## 🔧 Installation steps
-1. **Stáhnutí a rozbal ovladače** |
-   Stáhni ovladače ze stránky https://aka.jakush.space/konica-minolta-drivers (soubor `.inf`).
+
+### a) Semi-manual installation
+Naklonuj toto repo pomocí `git clone https://github.com/Jakush/konica-minolta-kyberna.git`.
+
+### b) Manual installation
+Stáhni ovladače ze stránky https://aka.jakush.space/konica-minolta-drivers (soubor `.inf`).
+
+&nbsp;
+
 1. **Otevři nastavení tiskáren** | 
    `Nastavení` → `Zařízení` → `Tiskárny a skenery`
    (nebo `Ovládací panely` → `Zařízení a tiskárny`)
@@ -36,8 +43,6 @@ Návod pro připojení síťové tiskárny **Konica Minolta bizhub C220** přes 
    Zadej název tiskárny, případně ji nastav jako výchozí (nepovinný), a dokonči průvodce.
 8. **Vytiskni testovací stránku**
    Ověř, že tiskárna funguje správně.
-9. **Hotovo**
-   Pokud jsi postupoval správně, tiskárna by měla fungovat a reagovat na požadavky na tisk.
 
 &nbsp;
 
