@@ -2,7 +2,7 @@ name: Auto-Update Drivers
 
 on:
   schedule:
-    - cron: '18 11 * * 1'  # Každou neděli v 00:00 UTC
+    - cron: '0 0 * * 0'  # Každou neděli v 00:00 UTC
   workflow_dispatch: {}   # umožní ruční spuštění pro test
 
 permissions:
