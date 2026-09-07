@@ -29,6 +29,16 @@ jobs:
       - name: Download driver
         run: node scripts/download-driver.js
 
+      - name: Upload debug artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-artifacts
+          path: |
+            debug-screenshot.png
+            debug-page.html
+          if-no-files-found: ignore
+
       - name: Extract driver into drivers/
         run: |
           set -euo pipefail
